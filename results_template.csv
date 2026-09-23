@@ -1,0 +1,6 @@
+Architecture,Segment Size,Flag Bits,Data Transitions,Flag Transitions,Total Transitions,Transition Reduction %,Area,Cell Count,Delay,Power
+Normal,16,0,,,,,,,,
+Global Bus-Invert,16,1,,,,,,,,
+2x8 Segmented BI,8,2,,,,,,,,
+4x4 Segmented BI,4,4,,,,,,,,
+8x2 Segmented BI,2,8,,,,,,,,

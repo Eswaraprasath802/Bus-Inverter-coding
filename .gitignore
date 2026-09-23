@@ -1,0 +1,9 @@
+build/
+reports/
+netlist/
+xcelium.d/
+*.log
+*.history
+*.vcd
+*.shm/
+results.csv
