@@ -1,0 +1,65 @@
+{
+  "zero_activity": {
+    "samples": 8,
+    "seed": null,
+    "warmup": null,
+    "description": "Constant zero following reset",
+    "sha256": "34440d49974bbecf6be03bc88d8fb0f54956faa7b3a25233c6b794c8d4de35ca"
+  },
+  "localized": {
+    "samples": 128,
+    "seed": null,
+    "warmup": null,
+    "description": "Original localized nibble traffic",
+    "sha256": "a6f9bc05625cbdbb075371f588d7604f97fa0de33c71246a7d56afafcb1a2d87"
+  },
+  "single_bit_walk": {
+    "samples": 16,
+    "seed": null,
+    "warmup": 65535,
+    "description": "One bit changes per cycle after inverted warm-up",
+    "sha256": "55e1d473ab157b76e4e311df69597065df2093dc28bb68165d0733777a8185f3"
+  },
+  "random_seed_12345678": {
+    "samples": 1024,
+    "seed": 305419896,
+    "warmup": null,
+    "description": "Independent-looking xorshift32 low words",
+    "sha256": "3ec47e14b684a5d7e754f274b7dc9f707509e9d464b026d81a1640e3e87c84e0"
+  },
+  "random_seed_deadbeef": {
+    "samples": 1024,
+    "seed": 3735928559,
+    "warmup": null,
+    "description": "Independent-looking xorshift32 low words",
+    "sha256": "7537e770a8d282a3b0e078c08553a74e3b14bc3cfe0a4dc8650d4672bbb6bbe9"
+  },
+  "random_seed_cafebabe": {
+    "samples": 1024,
+    "seed": 3405691582,
+    "warmup": null,
+    "description": "Independent-looking xorshift32 low words",
+    "sha256": "060d28ab31e0c3a888ab9d8e02b7b54a3c0f665d406e92f4f1a1cf5c3cbe39c6"
+  },
+  "random_seed_31415926": {
+    "samples": 1024,
+    "seed": 826366246,
+    "warmup": null,
+    "description": "Independent-looking xorshift32 low words",
+    "sha256": "e0ce7708ad319e4dee032e95f739a9a708411156863e1e3035273d0a47211497"
+  },
+  "correlated": {
+    "samples": 1024,
+    "seed": 2779077210,
+    "warmup": null,
+    "description": "68.75% holds; 25% bit updates; 6.25% replacements (nominal branch probabilities)",
+    "sha256": "42b54fb7159db96101d4244a3c8f292b65789a14d3088865606b8f8bbcd1539e"
+  },
+  "bursty": {
+    "samples": 1024,
+    "seed": 2976579765,
+    "warmup": null,
+    "description": "32-cycle holds / 32-cycle bursts; nibble updates and periodic replacements",
+    "sha256": "9b2aadd4807b3bf51852f74b81f23a94c09bb99fa4402a254f19af333e9ca5e2"
+  }
+}

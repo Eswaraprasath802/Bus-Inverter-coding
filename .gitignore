@@ -7,3 +7,5 @@ xcelium.d/
 *.vcd
 *.shm/
 results.csv
+__pycache__/
+*.pyc

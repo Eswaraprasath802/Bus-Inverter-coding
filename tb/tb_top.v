@@ -10,9 +10,8 @@ module tb_top;
     reg [7:0] previous_flags [0:4];
     integer data_total [0:4], flag_total [0:4], inversions [0:4];
     integer per_segment [0:39], ties [0:4];
-    integer errors, samples, normal_total, i, j, csv;
-    reg [31:0] rng;
-    reg [15:0] walking;
+    integer errors, samples, normal_total, i, csv;
+    reg [15:0] trace_words [0:1023];
     top dut (
         .clk(clk), .reset(reset), .data_in(data_in), .normal_data(normal_data),
         .global_encoded_data(encoded[15:0]), .global_invert_flag(flags[0]),
@@ -172,8 +171,27 @@ module tb_top;
             end
         end
     endtask
+    task run_trace;
+        input [8*24-1:0] name;
+        input integer count;
+        input integer warmup;
+        integer n;
+        reg [8*128-1:0] filename;
+        begin
+            reset_dut;
+            if (warmup >= 0) send(warmup[15:0]);
+            clear_counts;
+            $sformat(filename, "traces/%0s.hex", name);
+            $readmemh(filename, trace_words, 0, count-1);
+            for (n = 0; n < count; n = n + 1) begin
+                if (^trace_words[n] === 1'bx) fail("missing or unknown trace sample");
+                send(trace_words[n]);
+            end
+            report(name);
+        end
+    endtask
     initial begin
-        clk = 0; reset = 0; data_in = 0; errors = 0; rng = 32'h12345678;
+        clk = 0; reset = 0; data_in = 0; errors = 0;
         for (i = 0; i < 5; i = i + 1) ties[i] = 0;
         csv = $fopen("results.csv", "w");
         if (csv == 0) begin $display("TEST FAILED: cannot open results.csv"); $finish; end
@@ -182,9 +200,7 @@ module tb_top;
         $dumpfile("segmented_bus_invert.vcd");
         $dumpvars(0, tb_top);
 `endif
-        reset_dut; clear_counts;
-        for (i = 0; i < 8; i = i + 1) send(16'h0000);
-        report("zero_activity");
+        run_trace("zero_activity", 8, -1);
         reset_dut; clear_counts;
         send(16'h0000); send(16'hffff); send(16'haaaa); send(16'h5555);
         reset_dut; send(16'h5555); // Half the bits in every even-width segment.
@@ -192,26 +208,14 @@ module tb_top;
         for (i = 0; i < 16; i = i + 1) send(16'b1 << i);
         reset_dut; send(16'hffff); send(16'h0000); // Reset after active history.
         report("directed_and_ties");
-        reset_dut; clear_counts;
-        for (i = 0; i < 64; i = i + 1)
-            send({{4{i[0]}}, 8'h00, 3'b000, i[4]});
-        for (i = 0; i < 4; i = i + 1)
-            for (j = 0; j < 16; j = j + 1) send(j << (i*4));
-        report("localized");
-        reset_dut; send(16'hffff); clear_counts; // Warm up before measuring.
-        walking = 16'hffff;
-        for (i = 0; i < 16; i = i + 1) begin
-            walking = walking ^ (16'b1 << i); send(walking);
-        end
-        report("single_bit_walk");
-        reset_dut; clear_counts;
-        for (i = 0; i < 1024; i = i + 1) begin
-            rng = rng ^ (rng << 13);
-            rng = rng ^ (rng >> 17);
-            rng = rng ^ (rng << 5);
-            send(rng[15:0]);
-        end
-        report("random_seed_12345678");
+        run_trace("localized", 128, -1);
+        run_trace("single_bit_walk", 16, 65535);
+        run_trace("random_seed_12345678", 1024, -1);
+        run_trace("random_seed_deadbeef", 1024, -1);
+        run_trace("random_seed_cafebabe", 1024, -1);
+        run_trace("random_seed_31415926", 1024, -1);
+        run_trace("correlated", 1024, -1);
+        run_trace("bursty", 1024, -1);
         for (i = 0; i < 5; i = i + 1)
             if (ties[i] == 0) fail("missing tie coverage");
         $fclose(csv);

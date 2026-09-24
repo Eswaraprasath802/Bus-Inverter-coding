@@ -1,0 +1,139 @@
+1. Start your Cadence environment and prepare the simulation folder.
+
+     Enter these commands in the terminal. Use your actual project location if it differs:
+
+     csh
+     source /home/Cadance/sonashrc
+     cd /home/eswaraprasath/Developer/vlsi
+
+     python3 scripts/generate_traces.py
+     mkdir -p build/cadence_gui/worklib
+     cp -r build/traces build/cadence_gui/
+
+     cd build/cadence_gui
+     echo 'DEFINE worklib ./worklib' > cds.lib
+     echo 'DEFINE WORK worklib' > hdl.var
+
+     nclaunch &
+
+     The traces folder supplies input data to the testbench. Keep the simulator’s working directory as build/cadence_gui.
+
+  2. Set up NCLaunch.
+
+     If prompted:
+      - Choose Multiple Step mode.
+      - Set the design directory to your project’s build/cadence_gui.
+      - Select the cds.lib created above.
+      - Use worklib as the working library.
+
+  3. Compile the Verilog files.
+
+     In the file browser, navigate to the project’s rtl directory and select these seven files:
+
+     normal_bus.v
+     bus_invert.v
+     popcount.v
+     transition_counter.v
+     segmented_bus_invert_encoder.v
+     segmented_bus_invert_decoder.v
+     top.v
+
+     Right-click and choose NCVlog / Compile Verilog, or use the corresponding toolbar button. Compile into worklib.
+
+     Then navigate to tb and compile:
+
+     tb_top.v
+
+     Use Verilog mode. For this RTL waveform run, select only tb_top.v from the testbench directory; tb_mapped.v belongs to the separate mapped-netlist flow.
+
+     Check the messages window for compilation errors before proceeding.
+
+  4. Elaborate tb_top.
+
+     In the compiled-library browser, expand worklib and select tb_top.
+
+     Choose NCElab / Elaborate. Enable read, write, and connectivity access, or enter this in the additional-options field:
+
+     -access +rwc
+
+     This preserves access to internal signals for debugging. Cadence documents these elaboration access options in its simulation guide.
+
+     The simulation top must be tb_top, which supplies the clock, reset, and input traffic.
+
+  5. Launch SimVision and enable waveform recording.
+
+     Select the elaborated snapshot—typically displayed as worklib.tb_top:module—and choose NCSim / Simulate with the GUI option enabled.
+
+     Before running, enter these commands in the simulator console, at the ncsim> prompt:
+
+     database -open -shm -into waves.shm waves -default
+     probe -create -database waves tb_top -all -depth all
+
+     These commands create a waveform database and record signals throughout the testbench hierarchy. See Cadence’s waveform-probing guidance.
+
+  6. Add the useful signals to the waveform window.
+
+     In SimVision’s Design Browser, expand:
+
+     tb_top
+       └── dut
+
+     Select these signals under dut, then right-click Send To → Waveform Window, or drag them into the waveform window:
+
+      Signal                    What it shows
+     ━━━━━━━━━━━━━━━━━━━━━━━━  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+      clk                       Clock
+     ────────────────────────  ──────────────────────────────
+      reset                     Synchronous reset
+     ────────────────────────  ──────────────────────────────
+      data_in                   Original input word
+     ────────────────────────  ──────────────────────────────
+      normal_data               Uncoded transmission
+     ────────────────────────  ──────────────────────────────
+      global_encoded_data       Whole-word bus-invert output
+     ────────────────────────  ──────────────────────────────
+      global_invert_flag        Whole-word inversion flag
+     ────────────────────────  ──────────────────────────────
+      segmented_encoded_data    Four-segment encoded output
+     ────────────────────────  ──────────────────────────────
+      segmented_invert_flags    Four inversion flags
+     ────────────────────────  ──────────────────────────────
+      segmented_decoded_data    Recovered input word
+
+     Set data buses to Hexadecimal and segmented_invert_flags to Binary using the waveform’s radix setting.
+
+  7. Run and inspect the waveform.
+
+     First enter:
+
+     run 500ns
+
+     Use Zoom Fit, then zoom around individual rising clock edges.
+
+     You should see:
+      - A 10 ns clock period.
+      - Encoded outputs and flags clear on a rising edge while reset=1.
+      - Inputs change at falling edges; encoded outputs update at rising edges.
+      - After a rising edge with reset=0, segmented_decoded_data matches the accepted data_in.
+      - Encoded outputs stay stable between rising edges.
+
+     The first workload contains zeros, so zoom beyond roughly 100 ns to see the directed patterns. Initial X values before the first reset edge are expected.
+
+     To finish all workloads, enter:
+
+     run
+
+     The current testbench should finish around 63.5 µs and print:
+
+     TEST PASSED
+
+  8. Reopen the saved waveform later.
+
+     From the same simulation folder:
+
+     simvision waves.shm &
+
+     For a closer look at the inversion decision, expand tb_top → dut → u_encoder and add encoded_data, next_data, next_flags, and each segment’s transitions signal. Inspect the
+     combinational decision just before the rising edge and the registered result just after it.
+
+  If $readmemh reports missing files, check that traces/ is inside the simulator’s working directory.

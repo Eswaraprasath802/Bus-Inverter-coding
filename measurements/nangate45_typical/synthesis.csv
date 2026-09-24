@@ -1,0 +1,6 @@
+Architecture,Top,SegmentWidth,FlagBits,AreaUm2,CellCount,MaxCellPathNs,SetupSlackNs
+normal,normal_bus,16,0,0.0,0,0.0,7.9
+global,bus_invert,16,1,210.406,124,0.968453,8.02826
+seg8,segmented_bus_invert_encoder,8,2,232.218,149,0.652774,8.339456
+seg4,segmented_bus_invert_encoder,4,4,188.594,99,0.428559,8.548114
+seg2,segmented_bus_invert_encoder,2,8,212.8,107,0.327092,8.676367

@@ -1,15 +1,19 @@
 # Run from the project root using: genus -files scripts/genus_synth.tcl
 # Common UI. Use a fresh Genus process for each architecture.
-set DESIGN top
-set DATA_WIDTH 16
-set SEG_WIDTH 4
-set LIBRARY "<YOUR_STANDARD_CELL_LIBRARY>"
-set OUTPUT_LOAD "<OUTPUT_LOAD_IN_LIBRARY_CAPACITANCE_UNITS>"
+proc setting {name fallback} {
+    if {[info exists ::env($name)]} { return $::env($name) }
+    return $fallback
+}
+set DESIGN [setting DESIGN bus_invert]
+set DATA_WIDTH [setting DATA_WIDTH 16]
+set SEG_WIDTH [setting SEG_WIDTH 4]
+set LIBRARY [setting LIBRARY ""]
+set OUTPUT_LOAD [setting OUTPUT_LOAD ""]
 if {![file isfile $LIBRARY]} {
-    error "Replace LIBRARY with an existing characterized Liberty .lib file."
+    error "Set LIBRARY to an existing characterized Liberty .lib file."
 }
 if {![string is double -strict $OUTPUT_LOAD] || $OUTPUT_LOAD < 0} {
-    error "Replace OUTPUT_LOAD with a nonnegative per-wire load in library units."
+    error "Set OUTPUT_LOAD to a nonnegative per-wire load in library units."
 }
 if {$DATA_WIDTH <= 0 || $SEG_WIDTH <= 0 || $DATA_WIDTH % $SEG_WIDTH != 0} {
     error "Widths must be positive and DATA_WIDTH divisible by SEG_WIDTH."
